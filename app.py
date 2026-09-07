@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from ollama import Client
+from tools import calculator
 
 load_dotenv()
 
@@ -35,7 +36,23 @@ while True:
     response = client.chat(
         model=model,
         messages=messages,
+        tools=[calculator]
     )
+
+    tool_calls = response["message"]["tool_calls"]
+    if tool_calls:
+        for tool_call in tool_calls:
+            tool_name = tool_call["function"]["name"]
+            tool_args = tool_call["function"]["arguments"]
+            if tool_name == "calculator":
+                a = float(tool_args.get("a", 0))
+                b = float(tool_args.get("b", 0))
+                operation = tool_args.get("operation", "+")
+                try:
+                    result = calculator(a, b, operation)
+                    print("Tool result:", result)
+                except ValueError as e:
+                    print("Error:", str(e))
 
     print(response["message"]["content"])
 
