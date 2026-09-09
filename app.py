@@ -32,7 +32,7 @@ while True:
             "content": user_input
         }
     )
-
+    # 第一次调用LLM模型，获取模型的回复和工具调用信息
     response = client.chat(
         model=model,
         messages=messages,
@@ -41,11 +41,13 @@ while True:
 
     tool_calls = response["message"]["tool_calls"]
     if tool_calls:
+        messages.append(response["message"]) # 将模型的回复添加到消息列表中
         for tool_call in tool_calls:
             tool_name = tool_call["function"]["name"]
             tool_args = tool_call["function"]["arguments"]
             if tool_name == "calculator":
-                a = float(tool_args.get("a", 0))
+                print("Tool args:", tool_args)
+                a = float(tool_args.get("a", 0)) # 如果没有提供参数a，则默认为0
                 b = float(tool_args.get("b", 0))
                 operation = tool_args.get("operation", "+")
                 try:
@@ -53,12 +55,17 @@ while True:
                     print("Tool result:", result)
                 except ValueError as e:
                     print("Error:", str(e))
-
+            # 将工具的结果添加到消息列表中，以便在下一次调用LLM模型时使用
+            messages.append(
+                {
+                    "role": "tool",
+                    "content": str(result),
+                    "tool_name": tool_name
+                }
+            )
+        response = client.chat(
+            model=model,
+            messages=messages,
+            tools=[calculator]
+        )
     print(response["message"]["content"])
-
-    messages.append(
-        {
-            "role": "assistant",
-            "content": response["message"]["content"]
-        }
-    )
