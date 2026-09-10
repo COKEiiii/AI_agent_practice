@@ -22,3 +22,14 @@ def calculator(a: float, b: float, operation: str) -> float:
             raise ValueError("Cannot divide by zero.")
     else:
         raise ValueError("Invalid operation. Please choose from '+', '-', '*', or '/'.")
+
+def text_length(text: str) -> int:
+    """
+    Calculate the length of a given text string.
+    Only use this tool when the user explicitly requests to know the length of a text.
+    Do not use this tool for general conversation, memory, names, or non-text-length-related questions.
+
+    Args:
+        text: The input text string.
+    """
+    return len(text)
