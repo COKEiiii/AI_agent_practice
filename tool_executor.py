@@ -1,5 +1,10 @@
 from tools import calculator, text_length
 
+TOOL_REGISTRY = {
+    "calculator": calculator,
+    "text_length": text_length
+}
+
 def validate_calculator_args(args):
     try:
         a = float(args.get("a"))
@@ -14,10 +19,13 @@ def validate_calculator_args(args):
 def execute_tool(tool_call):
     tool_name = tool_call["function"]["name"]
     tool_args = tool_call["function"]["arguments"]
+    tool_function = TOOL_REGISTRY.get(tool_name)
+    if not tool_function:
+        return f"Error: Tool '{tool_name}' not found."
     if tool_name == "calculator":
         try:
             a, b, operation = validate_calculator_args(tool_args)
-            result = calculator(a, b, operation)
+            result = tool_function(a, b, operation)
             return str(result)
         except (ValueError, KeyError, TypeError) as e:
             return f"Error: {str(e)}"
@@ -25,7 +33,7 @@ def execute_tool(tool_call):
         text = tool_args["text"]
         if not isinstance(text, str):
             return "Error: 'text' argument must be a string."
-        result = text_length(text)
+        result = tool_function(text)
         return str(result)
     else:
         return f"Error: Tool '{tool_name}' not recognized."
