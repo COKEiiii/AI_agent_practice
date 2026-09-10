@@ -9,6 +9,12 @@ def run_agent(
     tools,
     max_iterations=5
 ):
+    messages.append(
+        {
+            "role": "user",
+            "content": user_input
+        }
+    )
     iteration_count = 0
     completed = False
     while True:
