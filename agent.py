@@ -1,4 +1,3 @@
-from tools import calculator, text_length
 from tool_executor import execute_tool
 
 def run_agent(
@@ -8,7 +7,7 @@ def run_agent(
     model,
     tools,
     max_iterations=5
-):
+)-> str:
     messages.append(
         {
             "role": "user",
@@ -48,9 +47,8 @@ def run_agent(
                     "tool_name": tool_name
                 }
             )
-
     if completed:
-        print(response["message"]["content"])
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
+        return response["message"]["content"] # 返回模型的最终回复
     else:
-        print("LLM模型未能完成任务，请检查工具调用和参数。")
+        return("LLM模型未能完成任务，请检查工具调用和参数。")

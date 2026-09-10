@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 from ollama import Client
 from tools import calculator, text_length
-from tool_executor import execute_tool
 from agent import run_agent
 load_dotenv()
 
