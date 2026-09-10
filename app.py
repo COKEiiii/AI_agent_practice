@@ -12,6 +12,17 @@ ollama_host = os.getenv("OLLAMA_HOST")
 if not model:# 如果model没有值
     raise ValueError("LLM_MODEL not found")
 
+def validate_calculator_args(args):
+    try:
+        a = float(args.get("a"))
+        b = float(args.get("b"))
+        operation = args.get("operation")
+        if operation not in ["+", "-", "*", "/"]:
+            raise ValueError("Invalid operation. Must be one of: +, -, *, /.")
+        return a, b, operation
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid calculator arguments: {e}")
+
 client = Client(host=ollama_host)# 创建一个 Ollama 客户端对象
 
 messages = [
@@ -49,19 +60,22 @@ while True:
             tool_args = tool_call["function"]["arguments"]
             if tool_name == "calculator":
                 print("Tool args:", tool_args)
-                a = float(tool_args.get("a", 0)) # 如果没有提供参数a，则默认为0
-                b = float(tool_args.get("b", 0))
-                operation = tool_args.get("operation", "+")
                 try:
+                    a, b, operation = validate_calculator_args(tool_args)
                     result = calculator(a, b, operation)
+                    tool_result = str(result)
                     print("Tool result:", result)
-                except ValueError as e:
+                except (ValueError, KeyError, TypeError) as e:
                     print("Error:", str(e))
+                    tool_result = f"Error: {str(e)}"
+            else:
+                tool_result = f"Error: Tool '{tool_name}' not recognized."
+                print(tool_result)
             # 将工具的结果添加到消息列表中，以便在下一次调用LLM模型时使用
             messages.append(
                 {
                     "role": "tool",
-                    "content": str(result),
+                    "content": tool_result,
                     "tool_name": tool_name
                 }
             )
