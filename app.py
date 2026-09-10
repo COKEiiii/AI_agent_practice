@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from ollama import Client
-from tools import calculator
+from tools import calculator, text_length
 from tool_executor import execute_tool
 
 load_dotenv()
@@ -44,7 +44,7 @@ while True:
         response = client.chat(
             model=model,
             messages=messages,
-            tools=[calculator]
+            tools=[calculator, text_length]
         )
         iteration_count += 1
 

@@ -21,5 +21,11 @@ def execute_tool(tool_call):
             return str(result)
         except (ValueError, KeyError, TypeError) as e:
             return f"Error: {str(e)}"
+    elif tool_name == "text_length":
+        text = tool_args["text"]
+        if not isinstance(text, str):
+            return "Error: 'text' argument must be a string."
+        result = len(text)
+        return str(result)
     else:
         return f"Error: Tool '{tool_name}' not recognized."
