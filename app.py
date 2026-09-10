@@ -35,3 +35,4 @@ while True:
         tools=[calculator, text_length],
         max_iterations=max_iterations
     )
+    print("AI助手的回复:", result)
