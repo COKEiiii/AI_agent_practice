@@ -21,4 +21,24 @@ messages = [
     }
 ]
 
-run_agent("", messages, client, model, [calculator, text_length])
+while True:
+    user_input = input("请输入您的问题：")
+    if user_input.lower().strip() in ["exit", "quit"]:
+        break
+
+    messages.append(
+        {
+            "role": "user",
+            "content": user_input
+        }
+    )
+    max_iterations = 5  # 设置最大迭代次数，防止无限循环
+
+run_agent(
+    user_input=user_input,
+    messages=messages,
+    client=client,
+    model=model,
+    tools=[calculator, text_length],
+    max_iterations=max_iterations
+)
