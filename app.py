@@ -39,9 +39,11 @@ while True:
         tools=[calculator]
     )
 
-    tool_calls = response["message"]["tool_calls"]
+    response_message = response.get("message", {})
+    tool_calls = response_message.get("tool_calls", [])
+
     if tool_calls:
-        messages.append(response["message"]) # 将模型的回复添加到消息列表中
+        messages.append(response_message) # 将模型的回复添加到消息列表中，这里的response_message[content]应该是空的，但是包含了工具调用信息(模型这一轮决定调用了哪个工具,用什么参数调用)
         for tool_call in tool_calls:
             tool_name = tool_call["function"]["name"]
             tool_args = tool_call["function"]["arguments"]
@@ -63,9 +65,10 @@ while True:
                     "tool_name": tool_name
                 }
             )
-        response = client.chat(
+        response = client.chat( # 第二次调用LLM模型，获取模型的最终回复
             model=model,
             messages=messages,
             tools=[calculator]
         )
     print(response["message"]["content"])
+    messages.append(response["message"]) # 将模型的回复添加到消息列表中

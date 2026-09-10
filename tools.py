@@ -1,6 +1,8 @@
 def calculator(a: float, b: float, operation: str) -> float:
     """
-    Perform a basic arithmetic calculation.
+    Perform arithmetic calculations on numeric values.
+    Only use this tool when the user explicitly requests a mathematical calculation.
+    Do not use this tool for general conversation, memory, names, or non-mathematical questions.
 
     Args:
         a: The first number.
