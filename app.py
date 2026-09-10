@@ -27,7 +27,7 @@ while True:
 
     max_iterations = 5  # 设置最大迭代次数，防止无限循环
 
-    run_agent(
+    result = run_agent(
         user_input=user_input,
         messages=messages,
         client=client,
