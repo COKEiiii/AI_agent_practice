@@ -20,7 +20,7 @@ def execute_tool(tool_call):
     tool_name = tool_call["function"]["name"]
     tool_args = tool_call["function"]["arguments"]
     tool_function = TOOL_REGISTRY.get(tool_name)
-    if not tool_function:
+    if tool_function is None:
         return f"Error: Tool '{tool_name}' not found."
     if tool_name == "calculator":
         try:
@@ -35,5 +35,3 @@ def execute_tool(tool_call):
             return "Error: 'text' argument must be a string."
         result = tool_function(text)
         return str(result)
-    else:
-        return f"Error: Tool '{tool_name}' not recognized."
