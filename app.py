@@ -43,17 +43,29 @@ while True:
             "content": user_input
         }
     )
-    # 第一次调用LLM模型，获取模型的回复和工具调用信息
-    response = client.chat(
-        model=model,
-        messages=messages,
-        tools=[calculator]
-    )
+    max_iterations = 5  # 设置最大迭代次数，防止无限循环
+    iteration_count = 0
+    completed = False
 
-    response_message = response.get("message", {})
-    tool_calls = response_message.get("tool_calls", [])
+    while True:
+        if iteration_count >= max_iterations:
+            print("达到最大迭代次数，停止调用LLM模型。")
+            break
 
-    if tool_calls:
+        response = client.chat(
+            model=model,
+            messages=messages,
+            tools=[calculator]
+        )
+        iteration_count += 1
+
+        response_message = response.get("message", {})
+        tool_calls = response_message.get("tool_calls", [])
+
+        if not tool_calls:
+            completed = True
+            break
+
         messages.append(response_message) # 将模型的回复添加到消息列表中，这里的response_message[content]应该是空的，但是包含了工具调用信息(模型这一轮决定调用了哪个工具,用什么参数调用)
         for tool_call in tool_calls:
             tool_name = tool_call["function"]["name"]
@@ -71,7 +83,6 @@ while True:
             else:
                 tool_result = f"Error: Tool '{tool_name}' not recognized."
                 print(tool_result)
-            # 将工具的结果添加到消息列表中，以便在下一次调用LLM模型时使用
             messages.append(
                 {
                     "role": "tool",
@@ -79,10 +90,9 @@ while True:
                     "tool_name": tool_name
                 }
             )
-        response = client.chat( # 第二次调用LLM模型，获取模型的最终回复
-            model=model,
-            messages=messages,
-            tools=[calculator]
-        )
-    print(response["message"]["content"])
-    messages.append(response["message"]) # 将模型的回复添加到消息列表中
+
+    if completed:
+        print(response["message"]["content"])
+        messages.append(response["message"]) # 将模型的回复添加到消息列表中
+    else:
+        print("LLM模型未能完成任务，请检查工具调用和参数。")
