@@ -1,4 +1,4 @@
-from tools import calculator
+from tools import calculator, text_length
 
 def validate_calculator_args(args):
     try:
@@ -25,7 +25,7 @@ def execute_tool(tool_call):
         text = tool_args["text"]
         if not isinstance(text, str):
             return "Error: 'text' argument must be a string."
-        result = len(text)
+        result = text_length(text)
         return str(result)
     else:
         return f"Error: Tool '{tool_name}' not recognized."
