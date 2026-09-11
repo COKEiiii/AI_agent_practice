@@ -11,7 +11,7 @@ def validate_calculator_args(args):
 
 def validate_text_length_args(args):
     text = args.get("text")
-    if not isinstance(text, str):
+    if not isinstance(text, str): # 判断 text 是否为字符串类型
         raise ValueError("Invalid text_length argument: 'text' must be a string.")
     return {"text": text}
 
