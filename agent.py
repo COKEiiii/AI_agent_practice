@@ -29,7 +29,8 @@ def run_agent(
         iteration_count += 1
 
         response_message = response.get("message", {})
-        tool_calls = response_message.get("tool_calls", [])
+        tool_calls = response_message.get("tool_calls") or []
+        print("本轮 tool_calls 数量:", len(tool_calls))
 
         if not tool_calls:
             completed = True
