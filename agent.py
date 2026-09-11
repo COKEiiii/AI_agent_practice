@@ -6,7 +6,8 @@ def run_agent(
     client,
     model,
     tools,
-    max_iterations=5
+    max_llm_calls=10,
+    max_tool_calls=8
 )-> str:
     messages.append(
         {
@@ -14,11 +15,13 @@ def run_agent(
             "content": user_input
         }
     )
-    iteration_count = 0
+    llm_call_count = 0
+    tool_call_count = 0
     completed = False
+    
     while True:
-        if iteration_count >= max_iterations:
-            print("达到最大迭代次数，停止调用LLM模型。")
+        if llm_call_count >= max_llm_calls:
+            print("达到最大LLM调用次数，停止调用LLM模型。")
             break
 
         response = client.chat(
@@ -26,7 +29,7 @@ def run_agent(
             messages=messages,
             tools=tools
         )
-        iteration_count += 1
+        llm_call_count += 1
 
         response_message = response.get("message", {})
         tool_calls = response_message.get("tool_calls") or []
@@ -42,6 +45,7 @@ def run_agent(
         tool_name = tool_call["function"]["name"]
         tool_result = execute_tool(tool_call)
         print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
+        tool_call_count += 1
 
         assistant_message = {
             "role": "assistant",
