@@ -87,9 +87,13 @@ def run_agent(
             }
         )
         if consecutive_tool_errors >= max_consecutive_tool_errors:
-            print(f"连续工具调用错误次数达到 {max_consecutive_tool_errors}，停止调用工具。")
+            print(
+                f"连续工具调用错误次数达到 "
+                f"{max_consecutive_tool_errors}，停止调用工具。"
+            )
             stop_reason = "max_consecutive_tool_errors_reached"
             completed = False
+            break
 
     if completed:
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
