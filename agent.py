@@ -20,9 +20,6 @@ def run_agent(
     completed = False
 
     while True:
-        if tool_call_count >= max_tool_calls:
-            print("达到最大工具调用次数，停止调用工具。")
-            break
         if llm_call_count >= max_llm_calls:
             print("达到最大LLM调用次数，停止调用LLM模型。")
             break
@@ -41,7 +38,9 @@ def run_agent(
         if not tool_calls:
             completed = True
             break
-
+        if tool_call_count >= max_tool_calls:
+            print("达到最大工具调用次数，停止调用工具。")
+            break
         tool_call = tool_calls[0]  # 只处理第一个工具调用
         tool_name = tool_call["function"]["name"]
         tool_result = execute_tool(tool_call)

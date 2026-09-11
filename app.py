@@ -25,7 +25,6 @@ while True:
     if user_input.lower().strip() in ["exit", "quit"]:
         break
 
-    max_iterations = 5  # 设置最大迭代次数，防止无限循环
 
     result = run_agent(
         user_input=user_input,
