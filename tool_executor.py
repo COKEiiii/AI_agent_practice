@@ -12,12 +12,10 @@ def execute_tool(tool_call):
     tool_args = tool_call["function"]["arguments"]
     tool_function = TOOL_REGISTRY.get(tool_name, {}).get("function")
     tool_validator = TOOL_REGISTRY.get(tool_name, {}).get("validator")
-    if tool_function is None:
-        return f"Error: Tool '{tool_name}' not found."
-    # validated_args = tool_validator(tool_args)
+
     if tool_function is None or tool_validator is None:
         return f"Error: Tool '{tool_name}' not found."
-    validated_args = tool_validator(tool_args)
+    
     try:
         validated_args = tool_validator(tool_args)
         result = tool_function(**validated_args)
