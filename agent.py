@@ -39,7 +39,7 @@ def run_agent(
         for tool_call in tool_calls:
             tool_name = tool_call["function"]["name"]
             tool_result = execute_tool(tool_call)
-            print("Tool result:", tool_result)
+            print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
             messages.append(
                 {
                     "role": "tool",

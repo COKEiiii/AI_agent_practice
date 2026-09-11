@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from ollama import Client
-from tools import calculator, text_length
+from tools import calculator, text_length, remove_whitespace
 from agent import run_agent
 load_dotenv()
 
@@ -32,7 +32,7 @@ while True:
         messages=messages,
         client=client,
         model=model,
-        tools=[calculator, text_length],
+        tools=[calculator, text_length, remove_whitespace],
         max_iterations=max_iterations
     )
     print("AI助手的回复:", result)
