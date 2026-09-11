@@ -33,6 +33,7 @@ while True:
         client=client,
         model=model,
         tools=[calculator, text_length, remove_whitespace],
-        max_iterations=max_iterations
+        max_llm_calls=10,
+        max_tool_calls=8
     )
     print("AI助手的回复:", result)

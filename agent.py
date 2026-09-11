@@ -18,8 +18,11 @@ def run_agent(
     llm_call_count = 0
     tool_call_count = 0
     completed = False
-    
+
     while True:
+        if tool_call_count >= max_tool_calls:
+            print("达到最大工具调用次数，停止调用工具。")
+            break
         if llm_call_count >= max_llm_calls:
             print("达到最大LLM调用次数，停止调用LLM模型。")
             break
@@ -39,8 +42,6 @@ def run_agent(
             completed = True
             break
 
-        # messages.append(response_message) # 将模型的回复添加到消息列表中，这里的response_message[content]应该是空的，但是包含了工具调用信息(模型这一轮决定调用了哪个工具,用什么参数调用)
-        # for tool_call in tool_calls:
         tool_call = tool_calls[0]  # 只处理第一个工具调用
         tool_name = tool_call["function"]["name"]
         tool_result = execute_tool(tool_call)
