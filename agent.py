@@ -42,13 +42,22 @@ def run_agent(
         tool_name = tool_call["function"]["name"]
         tool_result = execute_tool(tool_call)
         print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
+
         assistant_message = {
             "role": "assistant",
-            "content": tool_result,
-            "tool_name": tool_name
+            "content": response_message.get("content") or "",
+            "tool_calls": [tool_call]
         }
-        messages.append(assistant_message)  # 将工具调用结果添加到消息列表中
-        
+        messages.append(assistant_message)
+
+        messages.append(
+            {
+                "role": "tool",
+                "content": tool_result,
+                "tool_name": tool_name
+            }
+        )
+
     if completed:
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
         return response["message"]["content"] # 返回模型的最终回复
