@@ -22,10 +22,12 @@ def run_agent(
     last_tool_signature = None
     same_tool_repeat_count = 0
     completed = False
+    stop_reason = None
 
     while True:
         if llm_call_count >= max_llm_calls:
             print("达到最大LLM调用次数，停止调用LLM模型。")
+            stop_reason = "max_llm_calls_reached"
             break
 
         response = client.chat(
@@ -44,6 +46,7 @@ def run_agent(
             break
         if tool_call_count >= max_tool_calls:
             print("达到最大工具调用次数，停止调用工具。")
+            stop_reason = "max_tool_calls_reached"
             break
         tool_call = tool_calls[0]  # 只处理第一个工具调用
         tool_name = tool_call["function"]["name"]
@@ -53,6 +56,7 @@ def run_agent(
             same_tool_repeat_count += 1
             if same_tool_repeat_count > max_same_tool_repeats:
                 print(f"工具 {tool_name} 重复调用超过 {max_same_tool_repeats} 次，停止调用工具。")
+                stop_reason = "max_same_tool_repeats_reached"
                 break
         else:
             same_tool_repeat_count = 1
@@ -80,4 +84,4 @@ def run_agent(
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
         return response["message"]["content"] # 返回模型的最终回复
     else:
-        return("LLM模型未能完成任务，请检查工具调用和参数。")
+        return(f"LLM模型停止原因：{stop_reason}")
