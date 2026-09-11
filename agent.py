@@ -65,6 +65,10 @@ def run_agent(
         last_tool_signature = tool_signature
 
         tool_result = execute_tool(tool_call)
+        if tool_result.startswith("Error:"):
+            consecutive_tool_errors += 1
+        else:
+            consecutive_tool_errors = 0
         print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
         tool_call_count += 1
 
@@ -82,11 +86,10 @@ def run_agent(
                 "tool_name": tool_name
             }
         )
-
-    if consecutive_tool_errors >= max_consecutive_tool_errors:
-        print(f"连续工具调用错误次数达到 {max_consecutive_tool_errors}，停止调用工具。")
-        stop_reason = "max_consecutive_tool_errors_reached"
-        completed = False
+        if consecutive_tool_errors >= max_consecutive_tool_errors:
+            print(f"连续工具调用错误次数达到 {max_consecutive_tool_errors}，停止调用工具。")
+            stop_reason = "max_consecutive_tool_errors_reached"
+            completed = False
 
     if completed:
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
