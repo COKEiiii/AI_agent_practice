@@ -1,4 +1,5 @@
 from tool_executor import execute_tool
+import json
 
 def run_agent(
     user_input,
@@ -7,7 +8,8 @@ def run_agent(
     model,
     tools,
     max_llm_calls=10,
-    max_tool_calls=8
+    max_tool_calls=8,
+    max_same_tool_repeats=3
 )-> str:
     messages.append(
         {
@@ -17,6 +19,8 @@ def run_agent(
     )
     llm_call_count = 0
     tool_call_count = 0
+    last_tool_signature = None
+    same_tool_repeat_count = 0
     completed = False
 
     while True:
@@ -43,6 +47,16 @@ def run_agent(
             break
         tool_call = tool_calls[0]  # 只处理第一个工具调用
         tool_name = tool_call["function"]["name"]
+        tool_args = tool_call["function"]["arguments"]
+        tool_signature = (tool_name, json.dumps(tool_args, sort_keys=True))
+        if tool_signature == last_tool_signature:
+            same_tool_repeat_count += 1
+            if same_tool_repeat_count > max_same_tool_repeats:
+                print(f"工具 {tool_name} 重复调用超过 {max_same_tool_repeats} 次，停止调用工具。")
+                break
+        else:
+            same_tool_repeat_count = 1
+        last_tool_signature = tool_signature
         tool_result = execute_tool(tool_call)
         print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
         tool_call_count += 1
