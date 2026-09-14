@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from ollama import Client
-from tools import calculator, text_length, remove_whitespace
+from tool_registry import get_llm_tools
 from agent import run_agent
 load_dotenv()
 
@@ -31,7 +31,7 @@ while True:
         messages=messages,
         client=client,
         model=model,
-        tools=[calculator, text_length, remove_whitespace],
+        tools=get_llm_tools(),
         max_llm_calls=10,
         max_tool_calls=8
     )
