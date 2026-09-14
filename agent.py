@@ -9,7 +9,8 @@ def run_agent(
     tools,
     max_llm_calls=10,
     max_tool_calls=8,
-    max_same_tool_repeats=3
+    max_same_tool_repeats=3,
+    max_consecutive_tool_errors=3
 )-> str:
     messages.append(
         {
@@ -23,7 +24,6 @@ def run_agent(
     same_tool_repeat_count = 0
     completed = False
     stop_reason = None
-    max_consecutive_tool_errors = 1  # 设置最大连续工具调用错误次数
     consecutive_tool_errors = 0
 
     while True:
