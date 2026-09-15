@@ -9,8 +9,8 @@ def run_agent(
     tools,
     max_llm_calls=10,
     max_tool_calls=8,
-    max_same_tool_repeats=3,
-    max_consecutive_tool_errors=3
+    max_same_tool_repeats=3, # 同一个工具同一组参数连续重复
+    max_consecutive_tool_errors=3 # 防止工具连续执行失败，即使参数不同
 )-> str:
     messages.append(
         {
@@ -32,6 +32,7 @@ def run_agent(
             stop_reason = "max_llm_calls_reached"
             break
 
+        # 第一次调用模型时，messages中只有用户输入的消息。之后，每次调用模型时，messages中会包含用户输入、助手的回复以及工具调用的结果。
         response = client.chat(
             model=model,
             messages=messages,
@@ -39,8 +40,8 @@ def run_agent(
         )
         llm_call_count += 1
 
-        response_message = response.get("message", {})
-        tool_calls = response_message.get("tool_calls") or []
+        response_message = response.get("message", {}) # 如果key "message" 不存在，则返回一个空字典，但是message可能是None，这时仍然会返回None
+        tool_calls = response_message.get("tool_calls") or [] # 如果key "tool_calls" 不存在，则返回一个空列表，如果tool_calls是None，则返回一个空列表
         print("本轮 tool_calls 数量:", len(tool_calls))
 
         if not tool_calls:
@@ -53,7 +54,7 @@ def run_agent(
         tool_call = tool_calls[0]  # 只处理第一个工具调用
         tool_name = tool_call["function"]["name"]
         tool_args = tool_call["function"]["arguments"]
-        tool_signature = (tool_name, json.dumps(tool_args, sort_keys=True))
+        tool_signature = (tool_name, json.dumps(tool_args, sort_keys=True)) # 数据类型为元组
         if tool_signature == last_tool_signature:
             same_tool_repeat_count += 1
             if same_tool_repeat_count > max_same_tool_repeats:
