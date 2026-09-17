@@ -35,4 +35,9 @@ while True:
         max_llm_calls=10,
         max_tool_calls=8
     )
-    print("AI助手的回复:", result)
+    if result.get("completed"):
+        print("AI助手的回复：", result.get("content"))
+    else:
+        print("AI助手未能完成任务，停止原因：", result.get("stop_reason"))
+        print("LLM调用次数：", result.get("llm_call_count"))
+        print("工具调用次数：", result.get("tool_call_count"))

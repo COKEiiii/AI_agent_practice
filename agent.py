@@ -11,7 +11,7 @@ def run_agent(
     max_tool_calls=8,
     max_same_tool_repeats=3, # 同一个工具同一组参数连续重复
     max_consecutive_tool_errors=3 # 防止工具连续执行失败，即使参数不同
-)-> str:
+)-> dict:
     messages.append(
         {
             "role": "user",
@@ -98,6 +98,18 @@ def run_agent(
 
     if completed:
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
-        return response["message"]["content"] # 返回模型的最终回复
+        return {
+            "status": "completed",
+            "content": response["message"]["content"],
+            "stop_reason": stop_reason,
+            "llm_call_count": llm_call_count,
+            "tool_call_count": tool_call_count
+        } # 返回模型的最终回复
     else:
-        return(f"LLM模型停止原因：{stop_reason}")
+        return{
+            "status": "stopped",
+            "content": response_message.get("content") or "",
+            "stop_reason": stop_reason,
+            "llm_call_count": llm_call_count,
+            "tool_call_count": tool_call_count
+        }
