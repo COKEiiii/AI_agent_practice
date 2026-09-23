@@ -34,10 +34,12 @@ def test_agent_without_tool_call():
 class FakeToolClient:
     def __init__(self):
         self.call_count = 0
+        self.received_messages = []
     def chat(self, model, messages, tools):
+        self.received_messages.append(list(messages))
         self.call_count += 1
         if self.call_count == 1:
-            return {
+            return { # 这里相当于模拟LLM第一次调用返回的结果，里面包含了一个工具调用的请求-->calculator(a=10, b=5, operation="*")
                 "message": {
                     "content": "",
                     "tool_calls": [{
@@ -70,11 +72,18 @@ def test_agent_with_tool_call():
         messages=messages,
         client=fake_tool_client,
         model="fake-model",
-        tools=[calculator]  # Assuming calculator_tool is defined elsewhere in your code
+        tools=[calculator]
     )
+    second_call_messages = fake_tool_client.received_messages[1]
+    first_call_messages = fake_tool_client.received_messages[-2]
 
     assert result["status"] == "completed"
     assert result["content"] == "The result is 50."
     assert result["llm_call_count"] == 2
     assert result["tool_call_count"] == 1
     assert fake_tool_client.call_count == 2
+    assert second_call_messages[-1]["role"] == "tool"
+    assert second_call_messages[-1]["content"] == "50.0"
+    assert second_call_messages[-1]["tool_name"] == "calculator"
+    assert first_call_messages[-1]["role"] == "user"
+    assert first_call_messages[-1]["content"] == "Hello"
