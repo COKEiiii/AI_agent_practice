@@ -32,3 +32,15 @@ def test_execute_calculator_divide_by_zero():
     result = execute_tool(tool_call)
 
     assert result == "Error: Cannot divide by zero."
+
+def test_execute_unknown_tool():
+    tool_call = {
+        "function": {
+            "name": "unknown_tool",
+            "arguments": {}
+        }
+    }
+
+    result = execute_tool(tool_call)
+
+    assert result == "Error: Tool 'unknown_tool' not found."
