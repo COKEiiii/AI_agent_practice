@@ -39,7 +39,7 @@ class FakeToolClient:
         self.received_messages.append(list(messages))
         self.call_count += 1
         if self.call_count == 1:
-            return { # 这里相当于模拟LLM第一次调用返回的结果，里面包含了一个工具调用的请求-->calculator(a=10, b=5, operation="*")
+            return { # 这里相当于模拟LLM第一次调用返回的结果，里面包含了一个工具调用的请求-->calculator(a=10, b=5, operation="*")。Fake LLM 假装自己判断：“这个任务需要 calculator”。
                 "message": {
                     "content": "",
                     "tool_calls": [{
@@ -68,7 +68,7 @@ def test_agent_with_tool_call():
     fake_tool_client = FakeToolClient()
 
     result = run_agent(
-        user_input="Hello",
+        user_input="Hello", # 模拟加入用户输入消息
         messages=messages,
         client=fake_tool_client,
         model="fake-model",
@@ -78,7 +78,7 @@ def test_agent_with_tool_call():
     second_call_messages = fake_tool_client.received_messages[1]
     assistant_message = second_call_messages[-2]
     tool_args = assistant_message["tool_calls"][0]["function"]["arguments"]
-    
+
     assert result["status"] == "completed"
     assert result["content"] == "The result is 50."
     assert result["llm_call_count"] == 2

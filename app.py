@@ -13,6 +13,7 @@ if not model:# 如果model没有值
 
 client = Client(host=ollama_host)# 创建一个 Ollama 客户端对象
 
+# message的创建放在循环外面，避免每次循环都创建新的message，使得上下文得以保留
 messages = [
     {
         "role": "system",
@@ -31,7 +32,7 @@ while True:
         messages=messages,
         client=client,
         model=model,
-        tools=get_llm_tools(),
+        tools=get_llm_tools(), # 这里调用了get_llm_tools()函数来获取工具列表，但不实际使用这些工具，只是为了让agent知道有哪些工具可用
         max_llm_calls=10,
         max_tool_calls=8
     )

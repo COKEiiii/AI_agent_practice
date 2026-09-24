@@ -7,7 +7,7 @@ def run_agent(
     client,
     model,
     tools,
-    max_llm_calls=10,
+    max_llm_calls=10, # 最大调用LLM模型的次数
     max_tool_calls=8,
     max_same_tool_repeats=3, # 同一个工具同一组参数连续重复
     max_consecutive_tool_errors=3 # 防止工具连续执行失败，即使参数不同
@@ -36,7 +36,7 @@ def run_agent(
         response = client.chat(
             model=model,
             messages=messages,
-            tools=tools
+            tools=tools # 可供LLM调用的工具列表，模型可以选择调用这些工具来完成任务
         )
         llm_call_count += 1
 
@@ -73,10 +73,12 @@ def run_agent(
         print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
         tool_call_count += 1
 
+        # assistant_message用于保留模型请求调用工具的消息，tool_result用于保留工具调用的结果消息。assistant_message和tool_result都会被添加到messages中，供下一轮模型调用使用。
+        
         assistant_message = {
             "role": "assistant",
-            "content": response_message.get("content") or "",
-            "tool_calls": [tool_call]
+            "content": response_message.get("content") or "", # 如果模型没有返回content，则使用空字符串,防止NoneType报错；这里的content是模型的回复内容，可能是None
+            "tool_calls": [tool_call] # 这里保存的是本轮处理的第一个工具调用，并将其放进 assistant 的 tool_calls 字段里。
         }
         messages.append(assistant_message)
 
