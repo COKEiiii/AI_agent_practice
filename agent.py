@@ -102,7 +102,7 @@ def run_agent(
         messages.append(response["message"]) # 将模型的回复添加到消息列表中
         return {
             "status": "completed",
-            "content": response["message"]["content"],
+            "content": response_message.get("content") or "",
             "stop_reason": stop_reason,
             "llm_call_count": llm_call_count,
             "tool_call_count": tool_call_count

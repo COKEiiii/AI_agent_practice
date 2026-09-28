@@ -11,9 +11,9 @@ def execute_tool(tool_call):
         return f"Error: Tool '{tool_name}' not found."
     
     try:
-        validated_args = tool_validator(tool_args)
-        result = tool_function(**validated_args)
+        validated_args = tool_validator(tool_args) # 返回dict
+        result = tool_function(**validated_args) # 将上面返回的dict展开作为关键字参数传入函数
         return str(result)
 
     except (ValueError, KeyError, TypeError) as e:
-        return f"Error: {str(e)}"
+        return f"Error: {str(e)}" # 这里把异常信息转换为字符串并返回，是为了避免让异常直接冲出execute_tool函数，中断整个程序的执行。

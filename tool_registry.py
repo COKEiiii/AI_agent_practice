@@ -20,7 +20,7 @@ TOOL_REGISTRY = {
     }
 }
 
-def get_llm_tools():
+def get_llm_tools(): # 用于获取所有注册的工具函数，在app.py中调用这个函数来获取工具列表，但不实际使用这些工具，只是为了让agent知道有哪些工具可用
     return [
         config["function"]
         for config in TOOL_REGISTRY.values()
