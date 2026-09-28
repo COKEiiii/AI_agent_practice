@@ -10,7 +10,8 @@ def run_agent(
     max_llm_calls=10, # 最大调用LLM模型的次数
     max_tool_calls=8,
     max_same_tool_repeats=3, # 同一个工具同一组参数连续重复
-    max_consecutive_tool_errors=3 # 防止工具连续执行失败，即使参数不同
+    max_consecutive_tool_errors=3, # 防止工具连续执行失败，即使参数不同
+    think=None
 )-> dict:
     messages.append(
         {
@@ -33,11 +34,14 @@ def run_agent(
             break
 
         # 第一次调用模型时，messages中只有用户输入的消息。之后，每次调用模型时，messages中会包含用户输入、助手的回复以及工具调用的结果。
-        response = client.chat(
-            model=model,
-            messages=messages,
-            tools=tools # 可供LLM调用的工具列表，模型可以选择调用这些工具来完成任务
-        )
+        chat_kwargs = {
+            "model": model,
+            "messages": messages,
+            "tools": tools, # 可供LLM调用的工具列表，模型可以选择调用这些工具来完成任务
+        }
+        if think is not None:
+            chat_kwargs["think"] = think
+        response = client.chat(**chat_kwargs)
         llm_call_count += 1
 
         response_message = response.get("message", {}) # 如果key "message" 不存在，则返回一个空字典，但是message可能是None，这时仍然会返回None

@@ -34,7 +34,8 @@ while True:
         model=model,
         tools=get_llm_tools(), # 这里调用了get_llm_tools()函数来获取工具列表，但不实际使用这些工具，只是为了让agent知道有哪些工具可用
         max_llm_calls=10,
-        max_tool_calls=8
+        max_tool_calls=8,
+        think=True
     )
     if result["status"] == "completed":
         print("AI助手的回复：", result.get("content"))
