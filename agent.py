@@ -1,12 +1,13 @@
-from tool_executor import execute_tool
-from collections.abc import Mapping
 import json
+from collections.abc import Mapping, Sequence
+from typing import Any
 
+from tool_executor import execute_tool
 
 _MISSING = object()
 
 
-def _read_field(value, field, default=None):
+def _read_field(value: Any, field: str, default: Any = None) -> Any:
     """Read a field from mappings and SDK response objects."""
     if value is None:
         return default
@@ -75,14 +76,23 @@ def run_agent(
             break
 
         content = _read_field(response_message, "content", _MISSING)
-        tool_calls = _read_field(response_message, "tool_calls", _MISSING)
-        if content is _MISSING and tool_calls is _MISSING:
+        raw_tool_calls = _read_field(response_message, "tool_calls", _MISSING)
+        if content is _MISSING and raw_tool_calls is _MISSING:
             print("LLM返回了无效的响应，停止调用LLM模型。")
             stop_reason = "invalid_llm_response"
             break
 
         content = "" if content is _MISSING or content is None else content
-        tool_calls = [] if tool_calls is _MISSING or tool_calls is None else tool_calls
+        if raw_tool_calls is _MISSING or raw_tool_calls is None:
+            tool_calls: Sequence[Any] = ()
+        elif isinstance(raw_tool_calls, Sequence) and not isinstance(
+            raw_tool_calls, (str, bytes)
+        ):
+            tool_calls = raw_tool_calls
+        else:
+            print("LLM返回了无效的工具调用列表，停止调用LLM模型。")
+            stop_reason = "invalid_llm_response"
+            break
         print("本轮 tool_calls 数量:", len(tool_calls))
 
         if not tool_calls:

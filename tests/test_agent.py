@@ -1,5 +1,6 @@
-from agent import run_agent
 from ollama import ChatResponse, Message
+
+from agent import run_agent
 from tools import calculator
 
 
@@ -312,12 +313,14 @@ class FakeOllamaClient:
                 message=Message(
                     role="assistant",
                     content="",
-                    tool_calls=[{
-                        "function": {
-                            "name": "calculator",
-                            "arguments": {"a": "10", "b": "5", "operation": "*"}
-                        }
-                    }]
+                    tool_calls=[
+                        Message.ToolCall(
+                            function=Message.ToolCall.Function(
+                                name="calculator",
+                                arguments={"a": "10", "b": "5", "operation": "*"}
+                            )
+                        )
+                    ]
                 )
             )
         return ChatResponse(
