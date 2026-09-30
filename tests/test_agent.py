@@ -193,3 +193,48 @@ def test_agent_max_same_tool_repeats_reached():
     assert result["llm_call_count"] == 4
     assert result["tool_call_count"] == 3
     assert fake_loop_client.call_count == 4
+
+class FakeErrorClient:
+    def __init__(self):
+        self.call_count = 0
+    def chat(self, model, messages, tools, **kwargs):
+        self.call_count += 1
+        return {
+            "message": {
+                "content": "",
+                "tool_calls": [{
+                    "function": {
+                        "name": "calculator",
+                        "arguments": {"a": "abc", "b": "5", "operation": "%"}
+                    }
+                }]
+            }
+        }
+    
+def test_agent_max_consecutive_tool_errors_reached():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_error_client = FakeErrorClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_error_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=4,
+        max_tool_calls=10,
+        max_same_tool_repeats=4,
+        max_consecutive_tool_errors=3
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "max_consecutive_tool_errors_reached"
+    assert result["llm_call_count"] == 3
+    assert result["tool_call_count"] == 3
+    assert fake_error_client.call_count == 3
