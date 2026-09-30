@@ -97,3 +97,46 @@ def test_agent_with_tool_call():
     assert tool_args["a"] == "10"
     assert tool_args["b"] == "5"
     assert tool_args["operation"] == "*"
+
+class FakeLoopClient:
+    def __init__(self):
+        self.call_count = 0
+    def chat(self, model, messages, tools, **kwargs):
+        self.call_count += 1
+        return {
+            "message": {
+                "content": "",
+                "tool_calls": [{
+                    "function": {
+                        "name": "calculator",
+                        "arguments": {"a": "10", "b": "5", "operation": "*"}
+                    }
+                }]
+            }
+        }
+
+def test_agent_tool_call_loop():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_loop_client = FakeLoopClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_loop_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=3,
+        max_tool_calls=2
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "max_tool_calls_reached"
+    assert result["llm_call_count"] == 3
+    assert result["tool_call_count"] == 2
+    assert fake_loop_client.call_count == 3
