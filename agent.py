@@ -26,6 +26,7 @@ def run_agent(
     completed = False
     stop_reason = None
     consecutive_tool_errors = 0
+    response_message = {}
 
     while True:
         if llm_call_count >= max_llm_calls:
@@ -44,6 +45,10 @@ def run_agent(
         response = client.chat(**chat_kwargs)
         llm_call_count += 1
 
+        if not isinstance(response, dict):
+            print("LLM返回了无效的响应，停止调用LLM模型。")
+            stop_reason = "invalid_llm_response"
+            break
         response_message = response.get("message", {}) # 如果key "message" 不存在，则返回一个空字典，但是message可能是None，这时仍然会返回None
         if not isinstance(response_message, dict):
             print("LLM返回了无效的响应，停止调用LLM模型。")

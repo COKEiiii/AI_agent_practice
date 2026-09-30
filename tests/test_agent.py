@@ -269,3 +269,32 @@ def test_agent_handles_none_message():
     assert result["stop_reason"] == "invalid_llm_response"
     assert result["llm_call_count"] == 1
     assert result["tool_call_count"] == 0
+
+class FakeInvalidRootResponseClient:
+    def chat(self, model, messages, tools, **kwargs):
+        return None
+
+def test_agent_handles_invalid_root_response():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_invalid_root_response_client = FakeInvalidRootResponseClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_invalid_root_response_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=3,
+        max_tool_calls=10
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "invalid_llm_response"
+    assert result["llm_call_count"] == 1
+    assert result["tool_call_count"] == 0
