@@ -115,7 +115,7 @@ class FakeLoopClient:
             }
         }
 
-def test_agent_tool_call_loop():
+def test_agent_max_tool_calls_reached():
     messages = [
         {
             "role": "system",
@@ -139,4 +139,30 @@ def test_agent_tool_call_loop():
     assert result["stop_reason"] == "max_tool_calls_reached"
     assert result["llm_call_count"] == 3
     assert result["tool_call_count"] == 2
+    assert fake_loop_client.call_count == 3
+
+def test_agent_max_llm_calls_reached():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_loop_client = FakeLoopClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_loop_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=3,
+        max_tool_calls=10
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "max_llm_calls_reached"
+    assert result["llm_call_count"] == 3
+    assert result["tool_call_count"] == 3
     assert fake_loop_client.call_count == 3
