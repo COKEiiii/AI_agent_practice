@@ -45,6 +45,10 @@ def run_agent(
         llm_call_count += 1
 
         response_message = response.get("message", {}) # 如果key "message" 不存在，则返回一个空字典，但是message可能是None，这时仍然会返回None
+        if not isinstance(response_message, dict):
+            print("LLM返回了无效的响应，停止调用LLM模型。")
+            stop_reason = "invalid_llm_response"
+            break
         tool_calls = response_message.get("tool_calls") or [] # 如果key "tool_calls" 不存在，则返回一个空列表，如果tool_calls是None，则返回一个空列表
         print("本轮 tool_calls 数量:", len(tool_calls))
 
@@ -112,9 +116,13 @@ def run_agent(
             "tool_call_count": tool_call_count
         } # 返回模型的最终回复
     else:
+        if isinstance(response_message, dict):
+            final_content = response_message.get("content") or ""
+        else:
+            final_content = ""
         return{
             "status": "stopped",
-            "content": response_message.get("content") or "",
+            "content": final_content,
             "stop_reason": stop_reason,
             "llm_call_count": llm_call_count,
             "tool_call_count": tool_call_count

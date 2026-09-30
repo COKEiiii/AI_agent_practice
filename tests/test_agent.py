@@ -238,3 +238,34 @@ def test_agent_max_consecutive_tool_errors_reached():
     assert result["llm_call_count"] == 3
     assert result["tool_call_count"] == 3
     assert fake_error_client.call_count == 3
+
+class FakeInvalidResponseClient:
+    def chat(self, model, messages, tools, **kwargs):
+        return {
+            "message": None
+        }
+
+def test_agent_handles_none_message():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_invalid_response_client = FakeInvalidResponseClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_invalid_response_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=3,
+        max_tool_calls=10
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "invalid_llm_response"
+    assert result["llm_call_count"] == 1
+    assert result["tool_call_count"] == 0
