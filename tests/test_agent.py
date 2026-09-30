@@ -1,4 +1,5 @@
 from agent import run_agent
+from ollama import ChatResponse, Message
 from tools import calculator
 
 
@@ -298,3 +299,53 @@ def test_agent_handles_invalid_root_response():
     assert result["stop_reason"] == "invalid_llm_response"
     assert result["llm_call_count"] == 1
     assert result["tool_call_count"] == 0
+
+
+class FakeOllamaClient:
+    def __init__(self):
+        self.call_count = 0
+
+    def chat(self, model, messages, tools, **kwargs):
+        self.call_count += 1
+        if self.call_count == 1:
+            return ChatResponse(
+                message=Message(
+                    role="assistant",
+                    content="",
+                    tool_calls=[{
+                        "function": {
+                            "name": "calculator",
+                            "arguments": {"a": "10", "b": "5", "operation": "*"}
+                        }
+                    }]
+                )
+            )
+        return ChatResponse(
+            message=Message(role="assistant", content="The result is 50.")
+        )
+
+
+def test_agent_accepts_real_ollama_sdk_response_types():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    result = run_agent(
+        user_input="What is 10 times 5?",
+        messages=messages,
+        client=FakeOllamaClient(),
+        model="fake-model",
+        tools=[calculator]
+    )
+
+    assert result["status"] == "completed"
+    assert result["content"] == "The result is 50."
+    assert result["llm_call_count"] == 2
+    assert result["tool_call_count"] == 1
+    assert messages[-1] == {
+        "role": "assistant",
+        "content": "The result is 50."
+    }

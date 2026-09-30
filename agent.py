@@ -1,5 +1,28 @@
 from tool_executor import execute_tool
+from collections.abc import Mapping
 import json
+
+
+_MISSING = object()
+
+
+def _read_field(value, field, default=None):
+    """Read a field from mappings and SDK response objects."""
+    if value is None:
+        return default
+
+    getter = getattr(value, "get", None)
+    if callable(getter):
+        try:
+            return getter(field, default)
+        except TypeError:
+            # Some dict-like SDK objects only accept one argument for get().
+            try:
+                return getter(field)
+            except (KeyError, TypeError):
+                return default
+
+    return getattr(value, field, default)
 
 def run_agent(
     user_input,
@@ -45,16 +68,21 @@ def run_agent(
         response = client.chat(**chat_kwargs)
         llm_call_count += 1
 
-        if not isinstance(response, dict):
+        response_message = _read_field(response, "message", _MISSING)
+        if response_message is _MISSING or response_message is None:
             print("LLM返回了无效的响应，停止调用LLM模型。")
             stop_reason = "invalid_llm_response"
             break
-        response_message = response.get("message", {}) # 如果key "message" 不存在，则返回一个空字典，但是message可能是None，这时仍然会返回None
-        if not isinstance(response_message, dict):
+
+        content = _read_field(response_message, "content", _MISSING)
+        tool_calls = _read_field(response_message, "tool_calls", _MISSING)
+        if content is _MISSING and tool_calls is _MISSING:
             print("LLM返回了无效的响应，停止调用LLM模型。")
             stop_reason = "invalid_llm_response"
             break
-        tool_calls = response_message.get("tool_calls") or [] # 如果key "tool_calls" 不存在，则返回一个空列表，如果tool_calls是None，则返回一个空列表
+
+        content = "" if content is _MISSING or content is None else content
+        tool_calls = [] if tool_calls is _MISSING or tool_calls is None else tool_calls
         print("本轮 tool_calls 数量:", len(tool_calls))
 
         if not tool_calls:
@@ -64,9 +92,25 @@ def run_agent(
             print("达到最大工具调用次数，停止调用工具。")
             stop_reason = "max_tool_calls_reached"
             break
-        tool_call = tool_calls[0]  # 只处理第一个工具调用
-        tool_name = tool_call["function"]["name"]
-        tool_args = tool_call["function"]["arguments"]
+        raw_tool_call = tool_calls[0]  # 只处理第一个工具调用
+        tool_function = _read_field(raw_tool_call, "function", _MISSING)
+        tool_name = _read_field(tool_function, "name", _MISSING)
+        tool_args = _read_field(tool_function, "arguments", _MISSING)
+        if (
+            tool_function is _MISSING
+            or not isinstance(tool_name, str)
+            or not isinstance(tool_args, Mapping)
+        ):
+            print("LLM返回了无效的工具调用，停止调用LLM模型。")
+            stop_reason = "invalid_llm_response"
+            break
+
+        tool_call = {
+            "function": {
+                "name": tool_name,
+                "arguments": dict(tool_args),
+            }
+        }
         tool_signature = (tool_name, json.dumps(tool_args, sort_keys=True)) # 数据类型为元组
         if tool_signature == last_tool_signature:
             same_tool_repeat_count += 1
@@ -83,14 +127,14 @@ def run_agent(
             consecutive_tool_errors += 1
         else:
             consecutive_tool_errors = 0
-        print("模型调用工具：", tool_name, "参数：", tool_call["function"]["arguments"], "结果：", tool_result)
+        print("模型调用工具：", tool_name, "参数：", tool_args, "结果：", tool_result)
         tool_call_count += 1
 
         # assistant_message用于保留模型请求调用工具的消息，tool_result用于保留工具调用的结果消息。assistant_message和tool_result都会被添加到messages中，供下一轮模型调用使用。
         
         assistant_message = {
             "role": "assistant",
-            "content": response_message.get("content") or "", # 如果模型没有返回content，则使用空字符串,防止NoneType报错；这里的content是模型的回复内容，可能是None
+            "content": content,
             "tool_calls": [tool_call] # 这里保存的是本轮处理的第一个工具调用，并将其放进 assistant 的 tool_calls 字段里。
         }
         messages.append(assistant_message)
@@ -112,19 +156,21 @@ def run_agent(
             break
 
     if completed:
-        messages.append(response["message"]) # 将模型的回复添加到消息列表中
+        messages.append(
+            {
+                "role": "assistant",
+                "content": content,
+            }
+        ) # 使用标准字典保存回复，避免把 SDK 自定义对象混入历史消息
         return {
             "status": "completed",
-            "content": response_message.get("content") or "",
+            "content": content,
             "stop_reason": stop_reason,
             "llm_call_count": llm_call_count,
             "tool_call_count": tool_call_count
         } # 返回模型的最终回复
     else:
-        if isinstance(response_message, dict):
-            final_content = response_message.get("content") or ""
-        else:
-            final_content = ""
+        final_content = _read_field(response_message, "content", "") or ""
         return{
             "status": "stopped",
             "content": final_content,
