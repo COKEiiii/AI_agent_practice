@@ -166,3 +166,30 @@ def test_agent_max_llm_calls_reached():
     assert result["llm_call_count"] == 3
     assert result["tool_call_count"] == 3
     assert fake_loop_client.call_count == 3
+
+def test_agent_max_same_tool_repeats_reached():
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        }
+    ]
+
+    fake_loop_client = FakeLoopClient()
+
+    result = run_agent(
+        user_input="Hello",
+        messages=messages,
+        client=fake_loop_client,
+        model="fake-model",
+        tools=[calculator],
+        max_llm_calls=4,
+        max_tool_calls=10,
+        max_same_tool_repeats=3
+    )
+
+    assert result["status"] == "stopped"
+    assert result["stop_reason"] == "max_same_tool_repeats_reached"
+    assert result["llm_call_count"] == 4
+    assert result["tool_call_count"] == 3
+    assert fake_loop_client.call_count == 4
