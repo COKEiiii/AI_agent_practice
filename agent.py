@@ -133,11 +133,11 @@ def run_agent(
         last_tool_signature = tool_signature
 
         tool_result = execute_tool(tool_call)
-        if tool_result.startswith("Error:"):
+        if tool_result["success"] is False:
             consecutive_tool_errors += 1
         else:
             consecutive_tool_errors = 0
-        print("模型调用工具：", tool_name, "参数：", tool_args, "结果：", tool_result)
+        print("模型调用工具：", tool_name, "参数：", tool_args, "结果：", tool_result["content"])
         tool_call_count += 1
 
         # assistant_message用于保留模型请求调用工具的消息，tool_result用于保留工具调用的结果消息。assistant_message和tool_result都会被添加到messages中，供下一轮模型调用使用。
@@ -152,7 +152,7 @@ def run_agent(
         messages.append(
             {
                 "role": "tool",
-                "content": tool_result,
+                "content": tool_result["content"],
                 "tool_name": tool_name
             }
         )
