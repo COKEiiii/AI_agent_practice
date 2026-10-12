@@ -4,7 +4,7 @@ from typing import Any
 
 from tool_executor import execute_tool
 
-_MISSING = object()
+_MISSING = object() # 和none不同，none表示值为None，而_MISSING表示值缺失（根本没有这个字段）
 
 
 def _read_field(value: Any, field: str, default: Any = None) -> Any:
@@ -12,18 +12,18 @@ def _read_field(value: Any, field: str, default: Any = None) -> Any:
     if value is None:
         return default
 
-    getter = getattr(value, "get", None)
-    if callable(getter):
+    getter = getattr(value, "get", None) # 获取对象的get方法
+    if callable(getter): # 如果getter是可调用的，即对象有get方法
         try:
             return getter(field, default)
         except TypeError:
-            # Some dict-like SDK objects only accept one argument for get().
+            # Some dict-like SDK objects only accept one argument for get().而不允许传入默认值default
             try:
                 return getter(field)
             except (KeyError, TypeError):
                 return default
 
-    return getattr(value, field, default)
+    return getattr(value, field, default) # 如果value没有get方法，则尝试使用getattr获取属性field的值，如果不存在则返回default；getattr(response, "message", None)等价于response.message
 
 def run_agent(
     user_input,
@@ -84,9 +84,9 @@ def run_agent(
 
         content = "" if content is _MISSING or content is None else content
         if raw_tool_calls is _MISSING or raw_tool_calls is None:
-            tool_calls: Sequence[Any] = ()
+            tool_calls: Sequence[Any] = () # 如果LLM没有返回工具调用，则将tool_calls设置为空元组，表示没有工具调用；Sequence[Any]是类型标注(去掉其实也不影响，只是一个标注)
         elif isinstance(raw_tool_calls, Sequence) and not isinstance(
-            raw_tool_calls, (str, bytes)
+            raw_tool_calls, (str, bytes) # 字符串也是序列类型，但我们不希望把字符串当作工具调用列表
         ):
             tool_calls = raw_tool_calls
         else:
@@ -109,7 +109,7 @@ def run_agent(
         if (
             tool_function is _MISSING
             or not isinstance(tool_name, str)
-            or not isinstance(tool_args, Mapping)
+            or not isinstance(tool_args, Mapping) # 工具参数必须是键值映射结构，比如说字典或者SDK自定义的映射对象
         ):
             print("LLM返回了无效的工具调用，停止调用LLM模型。")
             stop_reason = "invalid_llm_response"
@@ -118,7 +118,7 @@ def run_agent(
         tool_call = {
             "function": {
                 "name": tool_name,
-                "arguments": dict(tool_args),
+                "arguments": dict(tool_args), # 将工具参数转换为标准字典，避免把 SDK 自定义对象混入工具调用中
             }
         }
         tool_signature = (tool_name, json.dumps(tool_args, sort_keys=True)) # 数据类型为元组
@@ -180,7 +180,7 @@ def run_agent(
             "tool_call_count": tool_call_count
         } # 返回模型的最终回复
     else:
-        final_content = _read_field(response_message, "content", "") or ""
+        final_content = _read_field(response_message, "content", "") or "" # 如果模型的最终回复是 None，则将 final_content 设置为空字符串，避免返回 None 导致前端显示异常
         return{
             "status": "stopped",
             "content": final_content,
