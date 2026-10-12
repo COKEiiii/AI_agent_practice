@@ -33,7 +33,7 @@ def test_execute_calculator_divide_by_zero():
     result = execute_tool(tool_call)
 
     assert result["success"] is False
-    assert result["content"] == "Error: Cannot divide by zero."
+    assert result["content"] == "Cannot divide by zero."
 
 def test_execute_unknown_tool():
     tool_call = {
@@ -46,4 +46,4 @@ def test_execute_unknown_tool():
     result = execute_tool(tool_call)
 
     assert result["success"] is False
-    assert result["content"] == "Error: Tool 'unknown_tool' not found."
+    assert result["content"] == "Tool 'unknown_tool' not found."
