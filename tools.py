@@ -44,3 +44,16 @@ def remove_whitespace(text: str) -> str:
         text: The input text string.
     """
     return ''.join(text.split())
+
+def read_text_file(file_path: str) -> str:
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            content = file.read()
+            if not content:
+                raise ValueError("文件为空")
+        return content
+    except FileNotFoundError:
+        raise ValueError("未找到文件")
+    except UnicodeDecodeError:
+        raise ValueError("编码不匹配,无法解码")
+    
