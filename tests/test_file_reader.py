@@ -19,3 +19,18 @@ def test_file_read_empty():
             read_text_file(f.name)
     finally:
         os.remove(f.name)
+
+def test_file_not_found(tmp_path):
+    file_path = tmp_path / "not_existing.txt"
+    with pytest.raises(ValueError, match="未找到文件"):
+        read_text_file(file_path)
+
+def test_file_encoding_error(tmp_path):
+    file_path = tmp_path / "invalid.txt"
+    with open(file_path, "wb") as f:
+        f.write(b"\xff")
+    with pytest.raises(ValueError, match="编码不匹配"):
+        read_text_file(f.name)
+
+        
+
