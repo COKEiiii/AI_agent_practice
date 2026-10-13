@@ -20,3 +20,12 @@ def validate_remove_whitespace_args(args):
     if not isinstance(text, str):
         raise ValueError("Invalid remove_whitespace argument: 'text' must be a string.")
     return {"text": text}
+
+def validate_read_text_file_args(args):
+    file_path = args.get("file_path")
+    if not isinstance(file_path, str):
+        raise ValueError("Invalid read text argument: 'file_path' must be a string.")
+    if not file_path.strip():
+        raise ValueError("Invalid read text argument: 'file_path' cannot be empty.")
+    return {"file_path": file_path}
+    

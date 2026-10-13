@@ -25,10 +25,10 @@ def test_file_not_found(tmp_path):
     with pytest.raises(ValueError, match="未找到文件"):
         read_text_file(file_path)
 
-def test_file_encoding_error(tmp_path):
+def test_file_encoding_error(tmp_path): # tmp_path 是 pytest 提供的一个临时目录，用于在测试中创建临时文件
     file_path = tmp_path / "invalid.txt"
     with open(file_path, "wb") as f:
-        f.write(b"\xff")
+        f.write(b"\xff") # 以二进制写入一个无效的 UTF-8 字节序列
     with pytest.raises(ValueError, match="编码不匹配"):
         read_text_file(f.name)
 
