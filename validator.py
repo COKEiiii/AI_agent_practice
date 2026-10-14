@@ -1,3 +1,5 @@
+from pathlib import Path
+
 def validate_calculator_args(args):
     try:
         a = float(args.get("a"))
@@ -22,10 +24,14 @@ def validate_remove_whitespace_args(args):
     return {"text": text}
 
 def validate_read_text_file_args(args):
+    base_dir = (Path(__file__).resolve().parent / "data").resolve()
     file_path = args.get("file_path")
     if not isinstance(file_path, str):
         raise ValueError("Invalid read text argument: 'file_path' must be a string.")
     if not file_path.strip():
         raise ValueError("Invalid read text argument: 'file_path' cannot be empty.")
-    return {"file_path": file_path}
+    target_path = (base_dir/file_path).resolve()
+    if not target_path.is_relative_to(base_dir):
+        raise ValueError("Invalid read text argument: 'file_path' must be within the 'data' directory.")
+    return {"file_path": str(target_path)} 
     
