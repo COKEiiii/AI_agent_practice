@@ -24,7 +24,7 @@ def validate_remove_whitespace_args(args):
     return {"text": text}
 
 def validate_read_text_file_args(args):
-    base_dir = (Path(__file__).resolve().parent / "data").resolve()
+    base_dir = (Path(__file__).resolve().parent / "data").resolve() # 获取当前文件所在目录的绝对路径，并在其下创建一个名为 "data" 的子目录的绝对路径
     file_path = args.get("file_path")
     if not isinstance(file_path, str):
         raise ValueError("Invalid read text argument: 'file_path' must be a string.")
