@@ -19,7 +19,7 @@
 ## 使用环境
 
 ```bash
-cd /Users/zhaolei/Documents/ChatGPT/AI_agent_basics
+cd /Users/zhaolei/Developer/AI_agent_basics
 source .venv/bin/activate
 ```
 

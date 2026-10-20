@@ -30,7 +30,9 @@ def validate_read_text_file_args(args):
         raise ValueError("Invalid read text argument: 'file_path' must be a string.")
     if not file_path.strip():
         raise ValueError("Invalid read text argument: 'file_path' cannot be empty.")
-    target_path = (base_dir/file_path).resolve()
+    
+    target_path = (base_dir/file_path).resolve() # 获取目标文件的绝对路径
+
     if not target_path.is_relative_to(base_dir):
         raise ValueError("Invalid read text argument: 'file_path' must be within the 'data' directory.")
     return {"file_path": str(target_path)} 

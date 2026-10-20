@@ -74,3 +74,9 @@ def test_validate_read_text_file_args_valid():
     project_root = Path(__file__).resolve().parent.parent
     expected_path = (project_root/"data"/"example.txt").resolve()
     assert actual_path == expected_path
+
+def test_validate_read_text_file_args_path_traversal():
+    args = {"file_path": "../.env"}
+    
+    with pytest.raises(ValueError, match="must be within"):
+        validate_read_text_file_args(args)
