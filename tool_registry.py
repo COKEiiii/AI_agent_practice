@@ -1,8 +1,9 @@
-from tools import calculator, text_length, remove_whitespace
+from tools import calculator, text_length, remove_whitespace, read_text_file
 from validator import (
     validate_calculator_args,
     validate_text_length_args,
-    validate_remove_whitespace_args
+    validate_remove_whitespace_args,
+    validate_read_text_file_args
 )
 
 TOOL_REGISTRY = {
@@ -17,6 +18,10 @@ TOOL_REGISTRY = {
     "remove_whitespace": {
         "function": remove_whitespace,
         "validator": validate_remove_whitespace_args
+    },
+    "read_text_file": {
+        "function": read_text_file,
+        "validator": validate_read_text_file_args
     }
 }
 

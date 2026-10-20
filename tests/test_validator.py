@@ -118,3 +118,24 @@ def test_symlink_resolution(tmp_path):
     actual_path = link_path.resolve()
     assert not actual_path.is_relative_to(data_dir)
     assert actual_path == secret_path
+
+def test_validate_read_text_file_args_symlink(tmp_path, monkeypatch):
+
+    # 1. 临时改变 validator.__file__
+    fake_file = tmp_path / "validator.py"
+    monkeypatch.setattr(validator, "__file__", str(fake_file))
+    # 2. 在 tmp_path 下创建 data 目录
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    # 3. 在 tmp_path 下创建 secret.txt
+    secret_path = tmp_path / "secret.txt"
+    secret_path.write_text("secret", encoding="utf-8")
+    # 4. 在 data 目录下创建 shortcut.txt 符号链接
+    link_path = data_dir / "shortcut.txt"
+    link_path.symlink_to(secret_path)
+    # 5. 构造 LLM 参数
+    args = {"file_path": "shortcut.txt"}
+
+    # 6. 验证 Validator 抛出 ValueError
+    with pytest.raises(ValueError, match="must be within"):
+        validate_read_text_file_args(args)
