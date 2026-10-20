@@ -6,6 +6,7 @@ from validator import (
 )
 import pytest
 from pathlib import Path
+import validator
 
 def test_validate_calculator_args_valid():
     result = validate_calculator_args(
@@ -77,6 +78,43 @@ def test_validate_read_text_file_args_valid():
 
 def test_validate_read_text_file_args_path_traversal():
     args = {"file_path": "../.env"}
-    
+
     with pytest.raises(ValueError, match="must be within"):
         validate_read_text_file_args(args)
+
+def test_validate_read_text_file_args_absolute_path():
+    args = {"file_path": "/etc/passwd"}
+
+    with pytest.raises(ValueError, match="must be within"):
+        validate_read_text_file_args(args)
+
+def test_validate_read_text_file_args_empty():
+    args = {"file_path": ""}
+
+    with pytest.raises(ValueError, match="cannot be empty"):
+        validate_read_text_file_args(args)
+
+def test_validate_read_text_file_args_invalid_type():
+    args = {"file_path": 123}
+
+    with pytest.raises(ValueError, match="must be a string"):
+        validate_read_text_file_args(args)
+
+def test_validate_read_text_file_args_whitespace():
+    args = {"file_path": "   "}
+
+    with pytest.raises(ValueError, match="cannot be empty"):
+        validate_read_text_file_args(args)
+
+def test_symlink_resolution(tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+
+    secret_path = tmp_path / "secret.txt"
+    secret_path.write_text("secret", encoding="utf-8")
+
+    link_path = data_dir / "shortcut.txt"
+    link_path.symlink_to(secret_path)
+    actual_path = link_path.resolve()
+    assert not actual_path.is_relative_to(data_dir)
+    assert actual_path == secret_path
