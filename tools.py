@@ -46,6 +46,16 @@ def remove_whitespace(text: str) -> str:
     return ''.join(text.split())
 
 def read_text_file(file_path: str) -> str:
+    """
+    Read the contents of a UTF-8 encoded text file.
+    Only use this tool when the user explicitly requests to read or inspect a local text file.
+    Do not use this tool for general conversation or to access files outside the project's data directory.
+
+    Args:
+        file_path: The relative path to a file within the project's data directory,
+            such as "example.txt" or "reports/notes.txt". Do not include the "data/" prefix.
+    """
+
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
