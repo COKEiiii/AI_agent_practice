@@ -1,3 +1,4 @@
+import pytest
 from tools import analyze_csv
 
 def test_analyze_csv_valid(tmp_path):
@@ -16,3 +17,21 @@ def test_analyze_csv_valid(tmp_path):
         "column_count" : 3,
         "columns" : ['name', 'age', 'gpa']
     }
+
+def test_analyze_csv_empty(tmp_path):
+    file_path = tmp_path / "empty_file.csv"
+    file_path.write_text(
+        "",
+        encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="CSV文件为空"):
+        analyze_csv(file_path)
+
+def test_analyze_csv_inconsistent_columns(tmp_path):
+    file_path = tmp_path / "inconsistent_columns_file.csv"
+    file_path.write_text(
+        "name,age,gpa\nAlice,22,3.8\nBob,23\n",
+        encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="CSV列数不一致"):
+        analyze_csv(file_path)
