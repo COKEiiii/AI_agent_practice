@@ -35,3 +35,16 @@ def test_analyze_csv_inconsistent_columns(tmp_path):
     )
     with pytest.raises(ValueError, match="CSV列数不一致"):
         analyze_csv(file_path)
+
+def test_analyze_csv_header_only(tmp_path):
+    file_path = tmp_path / "header_only.csv"
+    file_path.write_text(
+        "name,age,gpa",
+        encoding="utf-8"
+    )
+    result = analyze_csv(file_path)
+    assert result == {
+        "row_count": 0,
+        "column_count": 3,
+        "columns": ["name", "age", "gpa"]
+    }
