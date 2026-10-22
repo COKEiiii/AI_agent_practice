@@ -1,3 +1,5 @@
+import csv
+
 def calculator(a: float, b: float, operation: str) -> float:
     """
     Perform arithmetic calculations on numeric values.
@@ -66,3 +68,27 @@ def read_text_file(file_path: str) -> str:
         raise ValueError("未找到文件")
     except UnicodeDecodeError:
         raise ValueError("编码不匹配,无法解码")
+
+def analyze_csv(file_path: str) -> dict:
+    with open(file_path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f)
+        # 1. 读取表头
+        headers = next(reader, None)
+        if not headers:
+            raise ValueError("CSV文件为空或缺少表头")
+        # 2. 计算列数
+        column_count = len(headers)
+        # 3. 遍历剩余的数据行，统计行数
+        row_count = 0
+        for row in reader:
+            if len(row) != column_count:
+                raise ValueError(
+                    f"CSV列数不一致：预期{column_count}列，实际{len(row)}列"
+                )
+            row_count += 1
+    # 4. 返回包含三个字段的字典
+    return {
+        "row_count" : row_count,
+        "column_count" : column_count,
+        "columns" : headers
+    }
