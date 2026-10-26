@@ -53,6 +53,10 @@ def test_analyze_csv_quoted_comma(tmp_path):
     file_path = tmp_path / "csv_quoted.csv"
     file_path.write_text(
         "name,city,gpa\nAlice,\"New York, USA\",3.8\nBob,Singapore,3.9\n",
+#     """name,city,gpa
+# Alice,"New York, USA",3.8
+# Bob,Singapore,3.9
+# """, 这里也可以使用三引号的格式
         encoding="utf-8"
     )
     result = analyze_csv(file_path)
@@ -61,3 +65,14 @@ def test_analyze_csv_quoted_comma(tmp_path):
         "column_count": 3,
         "columns": ["name", "city", "gpa"]
     }
+
+def test_analyze_csv_file_not_found(tmp_path):
+    file_path = tmp_path / "not_existing.csv"
+    with pytest.raises(FileNotFoundError):
+        analyze_csv(file_path)
+
+def test_analyze_csv_encoding_error(tmp_path):
+    file_path = tmp_path / "invalid.csv"
+    file_path.write_bytes(b"\xff")
+    with pytest.raises(UnicodeDecodeError):
+        analyze_csv(file_path)
