@@ -15,7 +15,12 @@ def test_analyze_csv_valid(tmp_path):
     assert result == {
         "row_count" : 2,
         "column_count" : 3,
-        "columns" : ['name', 'age', 'gpa']
+        "columns" : ['name', 'age', 'gpa'],
+        "missing_values": {
+            "name": 0,
+            "age": 0,
+            "gpa": 0
+        }
     }
 
 def test_analyze_csv_empty(tmp_path):
@@ -46,7 +51,12 @@ def test_analyze_csv_header_only(tmp_path):
     assert result == {
         "row_count": 0,
         "column_count": 3,
-        "columns": ["name", "age", "gpa"]
+        "columns": ["name", "age", "gpa"],
+        "missing_values": {
+            "name": 0,
+            "age": 0,
+            "gpa": 0
+        }
     }
 
 def test_analyze_csv_quoted_comma(tmp_path):
@@ -63,7 +73,12 @@ def test_analyze_csv_quoted_comma(tmp_path):
     assert result == {
         "row_count": 2,
         "column_count": 3,
-        "columns": ["name", "city", "gpa"]
+        "columns": ["name", "city", "gpa"],
+        "missing_values": {
+            "name": 0,
+            "city": 0,
+            "gpa": 0
+        }
     }
 
 def test_analyze_csv_file_not_found(tmp_path):
@@ -76,3 +91,20 @@ def test_analyze_csv_encoding_error(tmp_path):
     file_path.write_bytes(b"\xff")
     with pytest.raises(UnicodeDecodeError):
         analyze_csv(file_path)
+
+def test_analyze_csv_missing_values(tmp_path):
+    file_path = tmp_path / "csv_missing_values.csv"
+    file_path.write_text(
+        """name,age,gpa
+Alice,22,3.8
+Bob,,3.9
+Charlie,21,
+David,,0
+"""
+    )
+    result = analyze_csv(file_path)
+    assert result["missing_values"] == {
+        "name": 0,
+        "age": 2,
+        "gpa": 1
+    }
