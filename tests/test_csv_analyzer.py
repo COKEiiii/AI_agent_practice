@@ -48,3 +48,16 @@ def test_analyze_csv_header_only(tmp_path):
         "column_count": 3,
         "columns": ["name", "age", "gpa"]
     }
+
+def test_analyze_csv_quoted_comma(tmp_path):
+    file_path = tmp_path / "csv_quoted.csv"
+    file_path.write_text(
+        "name,city,gpa\nAlice,\"New York, USA\",3.8\nBob,Singapore,3.9\n",
+        encoding="utf-8"
+    )
+    result = analyze_csv(file_path)
+    assert result == {
+        "row_count": 2,
+        "column_count": 3,
+        "columns": ["name", "city", "gpa"]
+    }
