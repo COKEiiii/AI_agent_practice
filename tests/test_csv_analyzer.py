@@ -1,5 +1,6 @@
 import pytest
-from tools import analyze_csv
+from tools import analyze_csv, calculate_mean
+
 
 def test_analyze_csv_valid(tmp_path):
     # 1. 使用 tmp_path 构造 students.csv 文件路径
@@ -100,7 +101,8 @@ Alice,22,3.8
 Bob,,3.9
 Charlie,21,
 David,,0
-"""
+""",
+encoding="utf-8"
     )
     result = analyze_csv(file_path)
     assert result["missing_values"] == {

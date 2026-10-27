@@ -93,3 +93,17 @@ def analyze_csv(file_path: str) -> dict:
         "columns" : headers,
         "missing_values" : missing_values
     }
+
+def calculate_mean(values: list[str]) -> float | None:
+    total = 0.0
+    count = 0
+
+    for value in values:
+        if value == "":
+            continue
+        float_value = float(value)
+        total += float_value
+        count += 1
+    if count == 0:
+        return None
+    return total/count
