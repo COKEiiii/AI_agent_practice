@@ -1,5 +1,5 @@
 import pytest
-from tools import analyze_csv, calculate_mean
+from tools import analyze_csv, calculate_mean, extract_column_values
 
 
 def test_analyze_csv_valid(tmp_path):
@@ -110,3 +110,30 @@ encoding="utf-8"
         "age": 2,
         "gpa": 1
     }
+
+def test_calculate_mean():
+    # 正常数值
+    assert calculate_mean(["2", "4", "6"]) == 4.0
+
+    # 包含缺失值
+    assert calculate_mean(["3.8", "", "3.6"]) == pytest.approx(3.7)
+
+    # 全部缺失
+    assert calculate_mean(["", ""]) is None
+
+    # 包含零值
+    assert calculate_mean(["0", "2", "4"]) == 2.0
+
+def test_extract_column_values():
+    headers = ["name", "age", "gpa"]
+
+    rows = [
+        ["Alice", "22", "3.8"],
+        ["Bob", "23", ""],
+        ["Charlie", "21", "3.6"]
+    ]
+
+    # 1. 调用 extract_column_values()，提取 gpa
+    values = extract_column_values(headers, rows, "gpa")
+    # 2. 使用 assert 验证结果
+    assert values == ["3.8", "", "3.6"]

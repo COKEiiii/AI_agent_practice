@@ -107,3 +107,22 @@ def calculate_mean(values: list[str]) -> float | None:
     if count == 0:
         return None
     return total/count
+
+def extract_column_values(
+    headers: list[str],
+    rows: list[list[str]],
+    column_name: str
+) -> list[str]:
+
+    # 1. 使用 index() 找到指定列的位置
+    column_index = headers.index(column_name)
+
+    # 2. 初始化用于保存结果的列表
+    values = []
+
+    # 3. 遍历 rows，取出每行对应位置的值
+    for row in rows:
+        values.append(row[column_index])
+
+    # 4. 返回结果
+    return values
