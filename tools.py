@@ -76,6 +76,7 @@ def analyze_csv(file_path: str) -> dict:
         if not headers:
             raise ValueError("CSV文件为空或缺少表头")
         column_count = len(headers)
+        rows = []
         row_count = 0
         missing_values = {column:0 for column in headers}
         for row in reader:
@@ -84,6 +85,7 @@ def analyze_csv(file_path: str) -> dict:
                     f"CSV列数不一致：预期{column_count}列，实际{len(row)}列"
                 )
             row_count += 1
+            rows.append(row)
             for column, value in zip(headers, row):
                 if value == "":
                     missing_values[column] += 1
@@ -126,3 +128,22 @@ def extract_column_values(
 
     # 4. 返回结果
     return values
+
+def is_numeric_column(values: list[str]) -> bool:
+    has_numeric_value = False
+
+    for value in values:
+        # 1. 如果是空字符串，跳过
+        if value == "":
+            continue
+        # 2. 尝试转换为 float
+        #    如果转换失败，直接返回 False
+        try:
+            float_value = float(value)
+        except ValueError:
+            return False
+        # 3. 转换成功后，将 has_numeric_value 设为 True
+        has_numeric_value = True
+
+    # 4. 返回 has_numeric_value
+    return has_numeric_value
